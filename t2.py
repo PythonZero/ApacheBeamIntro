@@ -2,6 +2,8 @@ import apache_beam as beam
 from functools import partial
 
 from apache_beam.dataframe import convert
+from apache_beam.io.filesystem import CompressionTypes
+
 from constants import TRANSACTION_AMOUNT_COL, TIMESTAMP_COL
 from os_utils import clear_output
 from timestamp_utils import filter_timestamps, convert_timestamp
@@ -57,7 +59,12 @@ class OutputFormat(beam.PTransform):
                 p_collection
                 | "CSV format" >> beam.Map(lambda row: ", ".join([f'"{column}"' for column in row]))
                 | "Write to out"
-                >> beam.io.WriteToText("output/results", file_name_suffix=".csv", header='"date", "transaction_amount"')
+                >> beam.io.WriteToText(
+                    "output/results",
+                    file_name_suffix=".csv.gz",
+                    header='"date", "transaction_amount"',
+                    compression_type=CompressionTypes.GZIP,
+                )
             )
 
         clear_output("jsonl")
@@ -67,7 +74,10 @@ class OutputFormat(beam.PTransform):
             >> beam.Map(
                 lambda row: str({col_name: val for (col_name, val) in zip(["date", "transaction_amount"], row)})
             )
-            | "Write to out" >> beam.io.WriteToText("output/results", file_name_suffix=".jsonl")
+            | "Write to out"
+            >> beam.io.WriteToText(
+                "output/results", file_name_suffix=".jsonl.gz", compression_type=CompressionTypes.GZIP
+            )
         )
 
 
@@ -87,4 +97,8 @@ def run(minimum_transaction_amount: int = 20, minimum_year: int = 2010, save_as_
 
 
 if __name__ == "__main__":
+    # CSV example
     run(minimum_transaction_amount=20, minimum_year=2010, save_as_csv=True, debug=False)
+
+    # JSON example
+    run(minimum_transaction_amount=20, minimum_year=2010, save_as_csv=False, debug=False)

@@ -1,6 +1,7 @@
 import apache_beam as beam
 from functools import partial
 from apache_beam.dataframe import convert
+from apache_beam.io.filesystem import CompressionTypes
 
 from constants import TRANSACTION_AMOUNT_COL, TIMESTAMP_COL
 from os_utils import clear_output
@@ -9,7 +10,7 @@ from timestamp_utils import filter_timestamps, convert_timestamp
 
 def run_json():
     print("Running Pipeline -> Outputting to JSONL format")
-    clear_output("jsonl")
+    clear_output("jsonl.gz")
 
     with beam.Pipeline() as pipeline:
         beam_df = pipeline | "Read CSV" >> beam.dataframe.io.read_csv(
@@ -32,13 +33,16 @@ def run_json():
             >> beam.Map(
                 lambda row: str({col_name: val for (col_name, val) in zip(["date", "transaction_amount"], row)})
             )
-            | "Write to out" >> beam.io.WriteToText("output/results", file_name_suffix=".jsonl")
+            | "Write to out"
+            >> beam.io.WriteToText(
+                "output/results", file_name_suffix=".jsonl.gz", compression_type=CompressionTypes.GZIP
+            )
         )
 
 
 def run_csv():
     print("Running Pipeline -> Outputting to CSV format")
-    clear_output("csv")
+    clear_output("csv.gz")
     with beam.Pipeline() as pipeline:
         beam_df = pipeline | "Read CSV" >> beam.dataframe.io.read_csv(
             "gs://cloud-samples-data/bigquery/sample-transactions/transactions.csv"
@@ -59,7 +63,12 @@ def run_csv():
             # | 'Print' >> beam.Map(print)  # for debugging
             | "CSV format" >> beam.Map(lambda row: ", ".join([f'"{column}"' for column in row]))
             | "Write to out"
-            >> beam.io.WriteToText("output/results", file_name_suffix=".csv", header='"date", "transaction_amount"')
+            >> beam.io.WriteToText(
+                "output/results",
+                file_name_suffix=".csv.gz",
+                header='"date", "transaction_amount"',
+                compression_type=CompressionTypes.GZIP,
+            )
         )
 
 

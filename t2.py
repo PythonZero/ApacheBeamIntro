@@ -10,7 +10,7 @@ from timestamp_utils import filter_timestamps, convert_timestamp
 
 
 class FilterTrnsxsGroupDate(beam.PTransform):
-    def __init__(self, minimum_transaction_amount, minimum_year, save_as_csv=True, debug=False):
+    def __init__(self, minimum_transaction_amount, minimum_year):
         """
         :param minimum_transaction_amount: The minimum transaction amount (to filter out)
         :param minimum_year: The minimum year (to filter out transactions)

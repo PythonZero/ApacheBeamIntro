@@ -11,3 +11,4 @@
    2. Change the output by modifying
       1. `save_as_csv` - if True -> csv, if False -> JSON
       2. `debug` - if True -> disables saving & prints to stdout
+4. Run `pytest` or `python -m pytest .` to run the tests

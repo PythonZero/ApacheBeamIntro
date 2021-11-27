@@ -101,4 +101,4 @@ if __name__ == "__main__":
     run(minimum_transaction_amount=20, minimum_year=2010, save_as_csv=True, debug=False)
 
     # JSON example
-    # run(minimum_transaction_amount=20, minimum_year=2010, save_as_csv=False, debug=False)
+    run(minimum_transaction_amount=20, minimum_year=2010, save_as_csv=False, debug=False)

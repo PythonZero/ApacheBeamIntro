@@ -61,12 +61,12 @@ def run_csv():
                 lambda row: row[TRANSACTION_AMOUNT_COL], sum, "total_quantity"
             )
             # | 'Print' >> beam.Map(print)  # for debugging
-            | "CSV format" >> beam.Map(lambda row: ", ".join([f'"{column}"' for column in row]))
+            | "CSV format" >> beam.Map(lambda row: ", ".join([f'{column}' for column in row]))
             | "Write to out"
             >> beam.io.WriteToText(
                 "output/results",
                 file_name_suffix=".csv.gz",
-                header='"date", "transaction_amount"',
+                header='date, transaction_amount',
                 compression_type=CompressionTypes.GZIP,
             )
         )

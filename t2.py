@@ -9,7 +9,7 @@ from os_utils import clear_output
 from timestamp_utils import filter_timestamps, convert_timestamp
 
 
-class FilterTrnsxsGroupDate2(beam.PTransform):
+class FilterTrnsxsGroupDate(beam.PTransform):
     def __init__(self, minimum_transaction_amount, minimum_year, save_as_csv=True, debug=False):
         """
         :param minimum_transaction_amount: The minimum transaction amount (to filter out)
@@ -54,20 +54,20 @@ class OutputFormat(beam.PTransform):
             return p_collection | "Print" >> beam.Map(print)
 
         if self.save_as_csv:
-            clear_output("csv")
+            clear_output("csv.gz")
             return (
                 p_collection
-                | "CSV format" >> beam.Map(lambda row: ", ".join([f'"{column}"' for column in row]))
+                | "CSV format" >> beam.Map(lambda row: ", ".join([f'{column}' for column in row]))
                 | "Write to out"
                 >> beam.io.WriteToText(
                     "output/results",
                     file_name_suffix=".csv.gz",
-                    header='"date", "transaction_amount"',
+                    header='date, transaction_amount',
                     compression_type=CompressionTypes.GZIP,
                 )
             )
 
-        clear_output("jsonl")
+        clear_output("jsonl.gz")
         return (
             p_collection
             | "JSONL format"
@@ -88,10 +88,10 @@ def run(minimum_transaction_amount: int = 20, minimum_year: int = 2010, save_as_
         )
         p_collection = convert.to_pcollection(beam_df)
         out_collection = (
-            p_collection
-            | "Transform"
-            >> FilterTrnsxsGroupDate2(minimum_transaction_amount=minimum_transaction_amount, minimum_year=minimum_year)
-            | "Output" >> OutputFormat(save_as_csv=save_as_csv, debug=debug)
+                p_collection
+                | "Transform"
+                >> FilterTrnsxsGroupDate(minimum_transaction_amount=minimum_transaction_amount, minimum_year=minimum_year)
+                | "Output" >> OutputFormat(save_as_csv=save_as_csv, debug=debug)
         )
         return out_collection
 
@@ -101,4 +101,4 @@ if __name__ == "__main__":
     run(minimum_transaction_amount=20, minimum_year=2010, save_as_csv=True, debug=False)
 
     # JSON example
-    run(minimum_transaction_amount=20, minimum_year=2010, save_as_csv=False, debug=False)
+    # run(minimum_transaction_amount=20, minimum_year=2010, save_as_csv=False, debug=False)
